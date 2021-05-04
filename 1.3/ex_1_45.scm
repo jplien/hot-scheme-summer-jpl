@@ -1,0 +1,56 @@
+#lang sicp
+
+(define tolerance 0.00001)
+(define (fixed-point f first-guess)
+  (define (close-enough? v1 v2)
+    (< (abs (- v1 v2))
+       tolerance))
+  (define (try guess)
+    (let ((next (f guess)))
+;      (newline)
+;      (display next)
+      (if (close-enough? guess next)
+          next
+          (try next))))
+  (try first-guess))
+
+(define (average x y)
+  (/ (+ x y) 2))
+
+(define (average-damp f)
+  (lambda (x) (average x (f x))))
+
+(define (compose f g)
+  (lambda (x) (f (g x))))
+
+(define (repeated f n)
+  (if (< n 2)
+      f
+      (compose f (repeated f (- n 1)))))
+
+(define (square x) (* x x))
+(define (cube x) (* x x x))
+(define (fourth x) (* x x x x))
+(define (fifth x) (* x x x x x))
+(define (sixth x) (* x x x x x x))
+(define (seventh x) (* x x x x x x x))
+(define (cube-root x)
+  (fixed-point (average-damp (lambda (y) (/ x (square y))))
+               1.0))
+;(define (fourth-root x)
+;  (fixed-point (average-damp (lambda (y) (/ x (cube y))))
+;               1.0))
+(define (fourth-root x)
+  (fixed-point ((repeated average-damp 2) (lambda (y) (/ x (cube y))))
+               1.0))
+(define (seventh-root x)
+  (fixed-point ((repeated average-damp 2) (lambda (y) (/ x (sixth y))))
+               1.0))
+(define (eighth-root x)
+  (fixed-point ((repeated average-damp 3) (lambda (y) (/ x (seventh y))))
+               1.0))
+  
+(cube-root 8)
+(fourth-root 16)
+(seventh-root 128)
+(eighth-root 256)
