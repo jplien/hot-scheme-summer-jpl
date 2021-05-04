@@ -1,46 +1,41 @@
 #lang sicp
 
-(define (smallest-divisor n)
-  (find-divisor n 2))
-
-(define (find-divisor n test-divisor)
-  (cond ((> (square test-divisor) n) n)
-        ((divides? test-divisor n) test-divisor)
-        (else (find-divisor n (next test-divisor)))))
-
-;Speed advantage is reduced by the need for an extra function call
-; as shown when you call these nested version.  Each one adds ~3 seconds
-; to the longest recursions
-(define (nnn n)
-  (nn n))
-
-(define (nn n)
-  (next n))
-
-(define (next n)
-  (if (= n 2)
-       3
-       (+ n 2)))
-
-(define (divides? a b)
-  (= (remainder b a) 0))
-
 (define (square x) (* x x))
 
-(define (prime? n)
-  (= n (smallest-divisor n)))
+(define (mr-prime? n times)
+  (cond ((= times 0) true)
+        ((mr-test n) (mr-prime? n (- times 1)))
+        (else false)))
+
+(define (mr-test n)
+  (define (try-it a)
+    (= (expmod a (- n 1) n) 1))
+  (try-it (+ 1 (random (- n 1)))))
+
+;Check for non-trivial square roots of one
+(define (check-ntsr x n)
+  (cond ((= x 1) x)
+        ((= x (- n 1)) x)
+        ((= (remainder (square x) n) 1) 0)
+        (else x)))
+         
+(define (expmod base exp m)
+  (cond ((= exp 0) 1)
+        ((even? exp)
+         (remainder (square (check-ntsr (expmod base (/ exp 2) m ) m)) m))
+        (else
+         (remainder (* base (expmod base ( - exp 1) m ))
+                    m))))
 
 (define (timed-prime-test n)
-  ;(newline)
-  ;(display n)
+  (newline)
+  (display n)
   (start-prime-test n (runtime)))
 (define (start-prime-test n start-time)
-  (cond ((prime? n)
+  (cond ((mr-prime? n 10)
          (report-prime n (- (runtime) start-time)))))
 
 (define (report-prime n elapsed-time)
-  (newline)
-  (display n)
   (display " *** ")
   (display elapsed-time))
 
@@ -52,8 +47,10 @@
 
 (timed-prime-test 6)
 (timed-prime-test 7)
+(timed-prime-test 1000)
 (timed-prime-test 1013)
 (timed-prime-test 1019)
+(timed-prime-test 10000)
 (timed-prime-test 10007)
 (timed-prime-test 10009)
 (timed-prime-test 10037)
